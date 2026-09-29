@@ -1831,11 +1831,13 @@ public final class PowerManagerService extends SystemService
                         uid, pid, state, callback);
                 mWakeLocks.add(wakeLock);
                 setWakeLockDisabledStateLocked(wakeLock);
+                // Only once per wake lock: re-acquiring an existing one must not register
+                // another callback, since only the last one would be removed on release.
+                addFrozenStateChangeCallbacksLocked(wakeLock);
                 notifyAcquire = true;
             }
 
             applyWakeLockFlagsOnAcquireLocked(wakeLock);
-            addFrozenStateChangeCallbacksLocked(wakeLock);
             mDirty |= DIRTY_WAKE_LOCKS;
             updatePowerStateLocked();
             if (notifyAcquire) {
